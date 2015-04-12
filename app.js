@@ -1,69 +1,125 @@
 
 var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+var mongoose = require('mongoose');
 
-//MongoDB
-var mongo = require('mongodb');
-var monk = require('monk');
-var db = monk('localhost:27017/nodetest1');
+var userlist = [];//want to store this in db
 
-var routes = require('./routes/index');
-var users = require('./routes/users');
-var app = express();
-//view engine setup
-//view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(__dirname + '/public/favicon.ico'));
-app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+//Passed-in Stuff START
+var loginid;//passed in
+var JSONObj;//passed in
 
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+var messagelist = [];
 
-//Make db accessible to router
-app.use(function(req,res,next){
-  req.db = db;
-  next();
-});
-
-app.use('/', routes);
-app.use('/users', users);
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
-});
-
-// error handler
-if (app.get('env') === 'development') {
-  app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-    res.render('error', {
-      message: err.message,
-      error: err
-    });
-  });
+for(i=0; i<JSONObj.messages.length; ++i){
+   messagelist[messagelist.length] = JSONObj.messages[i].id;
 }
+//Passed-in Stuff END
 
-// production error handler
-// no stacktraces leaked to user
 
-app.use(function(err, req, res, next) {
-  res.status(err.status || 500);
-  res.render('error', {
-    message: err.message,
-    error: {}
-  });
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function (callback){
+  
+
+//User Scheme START
+   var userSchema = mongoose.Schema({
+      userID: String,
+      messages: [{msgID:string, priority:int}]
+   })
+   
+   userSchema.methods.speak = function(){
+      var greeting = this.userName
+         ? "ID: : " + this.userID
+         : "I have no name"
+      console.log(greeting);
+   }
+
+   //userSchema.methods.refresh = function( loginid ){}
+   
+   var User = mongoose.model('User', userSchema);
+
+   var userlistSchema = mongoose.Schema({
+      users: []
+   })
+   var Userlist = mongoose.model('Userlist', userlistSchema);
+});
+//User Scheme END
+
+
+
+//Adding maybe? new User START
+   var repeat = false;
+   var Fred;
+
+   //Does User exist?
+   for(User x:userlist){
+      if(x.userID == loginid){
+         repeat = true;
+         Fred = x;
+         break;
+      }
+   }
+
+if(!repeat){
+   var Freddy = new User({
+      userID = loginid,
+      messages = []
+   });
+   userlist[userlist.length] = Freddy;
+
+   var importante = 0;
+   for(i=0; i<messagelist.length; ++i){
+    
+       Freddy.messages[Freddy.messages.length] = {messagelist[i], importante};
+   }
+}
+//adding maybe? new user END
+
+
+
+//updating messagelist START
+else{
+   var newm = false;
+   for(i=0; i<messagelist.length; ++i){
+      for(j=0; j<Fred.messages.length; ++j){
+         if(messagelist[i] == Fred.messages[j].msgID) break;
+         if(j==Fred.messages.length) newm=true;
+      }
+      if(newm) break;
+   }
+   if(newm){
+      var newmsgs = [];
+      var importante = 0;
+      for(i=0; i<messagelist.length; ++i){ //Check for messages Fred already has
+         for(j=0; j<Fred.messages.length; ++j){
+            if(messagelist[i] == Fred.messages[j].msgID) break;
+            if(j==Fred.messages.length){ //If message is new
+               
+               newmsgs[newmsgs.length]={messagelist[i],importante};
+            }
+         }
+      }
+      for(i=0; i<newmsgs.length; ++i){ //Add new messages to Fred
+         Fred.messages[Fred.messages.length]=newmsgs[i];
+      }
+   }
+}
+//updating messagelist END
+
+
+
+//User.find({ userID: /^id/ }, callback)
+//console.log(Fred.userName)
+
+userlist.save(function(err,userlist){
+   if(err) return console.error(err);
+   console.dir(userlist);
 });
 
-module.exports = app;
+/*Array.find(function(err,){
+   if(err) return console.error(err);
+   console.log(userlist);
+})*/
+
+mongoose.connect('mongodb://localhost/test');
