@@ -4,7 +4,6 @@ var mongoose = require('mongoose');
 
 var userlist = [];//want to store this in db
 
-
 /*//Passed-in Stuff START
 var loginid;//passed in
 var JSONObj;//passed in
