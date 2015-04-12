@@ -5,7 +5,7 @@ var mongoose = require('mongoose');
 var userlist = [];//want to store this in db
 
 
-//Passed-in Stuff START
+/*//Passed-in Stuff START
 var loginid;//passed in
 var JSONObj;//passed in
 
@@ -14,7 +14,7 @@ var messagelist = [];
 for(i=0; i<JSONObj.messages.length; ++i){
    messagelist[messagelist.length] = JSONObj.messages[i].id;
 }
-//Passed-in Stuff END
+//Passed-in Stuff END*/
 
 
 var db = mongoose.connection;
@@ -35,14 +35,13 @@ db.once('open', function (callback){
       console.log(greeting);
    }
 
-   //userSchema.methods.refresh = function( loginid ){}
+   //NEED to get JSON of message IDs from userID
+   //userSchema.methods.refresh = function refresh ( loginid ){}
    
    var User = mongoose.model('User', userSchema);
 
-   var userlistSchema = mongoose.Schema({
-      users: []
-   })
-   var Userlist = mongoose.model('Userlist', userlistSchema);
+   //var userlistSchema = mongoose.Schema({ users: [] })
+   //var Userlist = mongoose.model('Userlist', userlistSchema);
 });
 //User Scheme END
 
